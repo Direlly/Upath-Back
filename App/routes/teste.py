@@ -1,13 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from db.base import get_db
+from App.core.database import get_db
 from models import models, schemas
-from services.ia import gerar_perfil_vocacional
+from App.services.user import gerar_perfil_vocacional
 from typing import List 
 
-
 router = APIRouter(prefix="/teste", tags=["teste"])
-
 
 @router.post('/', response_model=schemas.TesteOut)
 def rodar_teste(test: schemas.TesteCreate, db: Session = Depends(get_db)):

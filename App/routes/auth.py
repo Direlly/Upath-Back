@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from models import models
-from db.base import get_db
-from services.email import enviar_email_recuperacao
+from App.core.database import get_db
+from App.services.auth import enviar_email_recuperacao
 from core.security import get_password_hash, verify_password, create_access_token
 import requests
 import schemas
