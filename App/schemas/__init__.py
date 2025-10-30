@@ -11,6 +11,18 @@ from schemas.user import (
     PasswordUpdate
 )
 
+from schemas.auth import (
+    TokenBase,
+    TokenResponse,
+    RefreshTokenRequest,
+    PasswordResetRequest,
+    PasswordResetConfirm,
+    AdminLoginRequest,
+    Admin2FARequest,
+    AdminSessionResponse,
+    AuditLogResponse
+)
+
 from schemas.test import (
     TestStart,
     TestAnswer, 
@@ -48,6 +60,17 @@ __all__ = [
     "UserResponse",
     "UserProfileUpdate",
     "PasswordUpdate",
+    
+    # Auth schemas
+    "TokenBase",
+    "TokenResponse",
+    "RefreshTokenRequest",
+    "PasswordResetRequest",
+    "PasswordResetConfirm",
+    "AdminLoginRequest",
+    "Admin2FARequest",
+    "AdminSessionResponse",
+    "AuditLogResponse",
     
     # Test schemas
     "TestStart",

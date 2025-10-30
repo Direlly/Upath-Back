@@ -7,6 +7,7 @@ from services.course_service import CourseService
 
 router = APIRouter()
 
+# Rota para obter todos os cursos com filtros e paginação
 @router.get("/", response_model=dict)
 async def get_courses(
     q: str = Query(None, description="Termo de busca"),
@@ -44,6 +45,7 @@ async def get_courses(
         }
     }
 
+# Rota para obter detalhes de um curso específico por ID
 @router.get("/{course_id}", response_model=dict)
 async def get_course(course_id: int, db: Session = Depends(get_db)):
     course_service = CourseService(db)

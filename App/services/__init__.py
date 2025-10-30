@@ -3,6 +3,8 @@ Módulo de serviços contendo a lógica de negócio do sistema.
 """
 
 from services.auth_service import AuthService
+from services.token_service import TokenService, AdminAuthService
+from services.audit_service import AuditService
 from services.user_service import UserService
 from services.test_service import TestService
 from services.simulation_service import SimulationService
@@ -13,6 +15,9 @@ from services.email_service import EmailService
 
 __all__ = [
     "AuthService",
+    "TokenService",
+    "AdminAuthService", 
+    "AuditService",
     "UserService",
     "TestService", 
     "SimulationService",
