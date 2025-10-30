@@ -7,6 +7,7 @@ from services.user_service import UserService
 
 router = APIRouter()
 
+# Rota para obter dados da página inicial do usuário
 @router.get("/home")
 async def get_user_home(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     user_service = UserService(db)
@@ -17,6 +18,7 @@ async def get_user_home(db: Session = Depends(get_db), current_user: dict = Depe
         "data": home_data
     }
 
+# Rota para obter o perfil do usuário
 @router.get("/profile")
 async def get_user_profile(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     user_service = UserService(db)
@@ -33,6 +35,7 @@ async def get_user_profile(db: Session = Depends(get_db), current_user: dict = D
         }
     }
 
+# Rota para atualizar o perfil do usuário
 @router.put("/profile")
 async def update_user_profile(profile_data: UserProfileUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     user_service = UserService(db)
@@ -50,6 +53,7 @@ async def update_user_profile(profile_data: UserProfileUpdate, db: Session = Dep
         }
     }
 
+# Rota para atualizar a senha do usuário
 @router.put("/password")
 async def update_password(password_data: PasswordUpdate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     user_service = UserService(db)
@@ -65,6 +69,7 @@ async def update_password(password_data: PasswordUpdate, db: Session = Depends(g
         }
     }
 
+# Rota para logout do usuário
 @router.post("/logout")
 async def logout():
     # Em uma implementação real, invalidaríamos o token
@@ -75,6 +80,7 @@ async def logout():
         }
     }
 
+# Rota para obter resultados de testes e simulações do usuário
 @router.get("/results")
 async def get_user_results(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     # Combinar resultados de testes e simulações

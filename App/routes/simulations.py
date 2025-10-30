@@ -7,7 +7,8 @@ from services.simulation_service import SimulationService
 
 router = APIRouter()
 
-@router.post("/")
+# Rota para criar uma nova simulação
+@router.post("/simulacao")
 async def create_simulation(simulation_data: SimulationCreate, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     simulation_service = SimulationService(db)
     
@@ -31,11 +32,15 @@ async def create_simulation(simulation_data: SimulationCreate, db: Session = Dep
         "success": True,
         "data": {
             "id_simulacao": simulation.id,
-            "percentual_ingresso": 72.34,
-            "cursos_resultado": results
+            "curso": results["curso"],
+            "notaUsuario": media,
+            "notaCorte": results["nota_corte"],
+            "chanceIngresso": results["chance_ingresso"],
+            "resultado": results["resultado"],
         }
     }
 
+# Rota para obter detalhes de uma simulação específica
 @router.get("/{simulation_id}")
 async def get_simulation(simulation_id: int, db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     simulation_service = SimulationService(db)
@@ -47,6 +52,7 @@ async def get_simulation(simulation_id: int, db: Session = Depends(get_db), curr
         "data": simulation
     }
 
+# Rota para obter o histórico de simulações do usuário
 @router.get("/historico")
 async def get_simulation_history(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     simulation_service = SimulationService(db)

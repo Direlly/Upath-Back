@@ -4,6 +4,7 @@ from services.ia_service import IAService
 router = APIRouter()
 ia_service = IAService()
 
+# Rota para retorna para proxima pergunta do teste de IA
 @router.post("/teste")
 async def ia_test_endpoint(data: dict):
     answers = data.get("respostas", [])
@@ -15,6 +16,7 @@ async def ia_test_endpoint(data: dict):
         "cursos_sugeridos": result["cursos_sugeridos"]
     }
 
+# Rota para obter resultados finais do teste de IA
 @router.post("/result")
 async def ia_result_endpoint(data: dict):
     # Endpoint para resultados finais do teste

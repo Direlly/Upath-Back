@@ -3,6 +3,7 @@ from models.auth import AuditLog
 from typing import Optional, Dict, Any
 import json
 
+# Serviço de auditoria para registrar ações administrativas e de usuários
 class AuditService:
     def __init__(self, db: Session):
         self.db = db

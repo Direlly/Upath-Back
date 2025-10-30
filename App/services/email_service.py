@@ -10,6 +10,7 @@ class EmailService:
         self.smtp_username = settings.SMTP_USERNAME
         self.smtp_password = settings.SMTP_PASSWORD
     
+    # Rota para enviar email de redefinição de senha
     def send_password_reset_email(self, to_email: str, reset_token: str) -> bool:
         try:
             subject = "Redefinição de Senha - UPath"
@@ -34,6 +35,7 @@ class EmailService:
             print(f"Erro ao enviar email: {e}")
             return False
     
+    # Rota para enviar email com PIN 2FA para admin
     def send_admin_2fa_email(self, to_email: str, pin_code: str) -> bool:
         try:
             subject = "Código de Verificação - UPath Admin"
@@ -52,6 +54,7 @@ class EmailService:
             print(f"Erro ao enviar email: {e}")
             return False
     
+    # Função genérica para envio de email
     def send_email(self, to_email: str, subject: str, body: str) -> bool:
         try:
             msg = MIMEMultipart()

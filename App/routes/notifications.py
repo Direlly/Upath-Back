@@ -7,6 +7,7 @@ from services.notification_service import NotificationService
 
 router = APIRouter()
 
+# Rota para obter notificações do usuário com filtros opcionais
 @router.get("/")
 async def get_notifications(
     filter: str = Query(None, description="Filtro por tipo"),
@@ -26,6 +27,7 @@ async def get_notifications(
         "data": notifications
     }
 
+# Rota para marcar uma notificação como lida
 @router.patch("/{notification_id}/read")
 async def mark_notification_as_read(
     notification_id: int,
@@ -42,6 +44,7 @@ async def mark_notification_as_read(
         }
     }
 
+# Rotas para obter a configurações de notificação do usuário
 @router.get("/settings")
 async def get_notification_settings(db: Session = Depends(get_db), current_user: dict = Depends(get_current_user)):
     notification_service = NotificationService(db)
@@ -52,6 +55,7 @@ async def get_notification_settings(db: Session = Depends(get_db), current_user:
         "data": settings
     }
 
+# Rota para atualizar configurações de notificação do usuário
 @router.put("/settings")
 async def update_notification_settings(
     settings: list[NotificationSettings],
