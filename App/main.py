@@ -1,34 +1,45 @@
-from fastapi import FastAPI
-from .database import engine, Base
-from .routes import auth, teste, simulador, admin, users, admin_crud
+from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-
-app = FastAPI(title='UPath API - Back-End Unificado')
-
-# CORS - libera acesso do React e Android
-origins = [
-"http://localhost:3000",
-"http://127.0.0.1:3000",
-"http://10.0.2.2:3000",
-"*" # para testes locais, depois restrinja
-]
-app.add_middleware(
-CORSMiddleware,
-allow_origins=origins,
-allow_credentials=True,
-allow_methods=["*"],
-allow_headers=["*"],
+from fastapi.security import HTTPBearer
+from app.core.config import settings
+from app.core.database import engine, Base
+from app.routes import (
+    auth, users, tests, simulations, 
+    courses, notifications, admin, ia
 )
 
-# Rotas principais
-app.include_router(auth.router)
-app.include_router(users.router)
-app.include_router(teste.router)
-app.include_router(simulador.router)
-app.include_router(admin.router)
-app.include_router(admin_crud.router)
+# Criar tabelas
+Base.metadata.create_all(bind=engine)
 
+app = FastAPI(
+    title="UPath API",
+    description="Sistema de Orientação Vocacional e Simulação de Ingresso",
+    version="1.0.0"
+)
 
-@app.get('/')
-def root():
-    return {"msg": "UPath API expandida rodando com CRUD administrativo para cursos, bolsas e notas de corte."}
+# CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://localhost:8081"],  # React e Mobile
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Rotas
+app.include_router(auth.router, prefix="/api/auth", tags=["Autenticação"])
+app.include_router(users.router, prefix="/api/user", tags=["Usuário"])
+app.include_router(tests.router, prefix="/api/test", tags=["Testes Vocacionais"])
+app.include_router(simulations.router, prefix="/api/simulation", tags=["Simulações"])
+app.include_router(courses.router, prefix="/api/courses", tags=["Cursos"])
+app.include_router(notifications.router, prefix="/api/notifications", tags=["Notificações"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Administração"])
+app.include_router(ia.router, prefix="/api/ia", tags=["Inteligência Artificial"])
+
+@app.get("/")
+async def root():
+    return {"message": "UPath API - Sistema de Orientação Vocacional"}
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "service": "UPath API"}
