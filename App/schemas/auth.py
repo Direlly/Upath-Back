@@ -2,39 +2,48 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
 
+# Schemas para autenticação e autorização
 class TokenBase(BaseModel):
     token: str
     token_type: str = "bearer"
 
+# Resposta do token com informações do usuário
 class TokenResponse(TokenBase):
     user_id: int
     email: str
     role: str
     expires_in: int
 
+# Requisição de login
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
 
+# Requisição de redefinição de senha
 class PasswordResetRequest(BaseModel):
     email: EmailStr
 
+# Requisição de confirmação de redefinição de senha
 class PasswordResetConfirm(BaseModel):
     token: str
     new_password: str
     confirm_password: str
 
+# Schemas para login admin com 2FA
 class AdminLoginRequest(BaseModel):
     email: EmailStr
     senha: str
 
+# Schemas para verificação do PIN 2FA
 class Admin2FARequest(BaseModel):
     session_id: str
     token_4d: str
 
+# Resposta da sessão admin
 class AdminSessionResponse(BaseModel):
     session_id: str
     expires_at: datetime
 
+# Resposta do log de auditoria
 class AuditLogResponse(BaseModel):
     id: int
     acao: str

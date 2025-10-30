@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
 
+# Schemas para simulações de ingresso
 class SimulationCreate(BaseModel):
     ano_enem: int
     nota_redacao: float
@@ -12,6 +13,7 @@ class SimulationCreate(BaseModel):
     estado: str
     modalidade: str
 
+# Resultado da simulação
 class SimulationResult(BaseModel):
     curso: str
     instituicao: str
@@ -20,11 +22,13 @@ class SimulationResult(BaseModel):
     chance_ingresso: float
     resultado: str
 
+# Schema para resposta de simulação
 class SimulationResponse(BaseModel):
     id_simulacao: int
     percentual_ingresso: float
     cursos_resultado: List[SimulationResult]
 
+# Schema para histórico de simulações do usuário
 class SimulationHistory(BaseModel):
     id: int
     ano_enem: int
