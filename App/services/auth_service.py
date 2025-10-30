@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from app.models.user import User
-from app.core.security import get_password_hash, verify_password
-from app.schemas.user import UserCreate
+from models.user import User
+from core.security import get_password_hash, verify_password
+from schemas.user import UserCreate
 from datetime import datetime
 
 class AuthService:

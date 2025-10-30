@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean
 from sqlalchemy.sql import func
-from app.core.database import Base
+from core.database import Base
 
 class Course(Base):
     __tablename__ = "courses"

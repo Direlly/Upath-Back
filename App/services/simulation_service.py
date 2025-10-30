@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
-from app.models.simulation import Simulation, SimulationResult
-from app.models.course import CutoffScore
-from app.schemas.simulation import SimulationCreate
+from models.simulation import Simulation, SimulationResult
+from models.course import CutoffScore
+from schemas.simulation import SimulationCreate
 from typing import List
 
 class SimulationService:
