@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     # Email
     SMTP_SERVER: str = os.getenv("SMTP_SERVER", "smtp.gmail.com")
     SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
-    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "")
-    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "upath.contato@gmail.com")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "zzwv mecg ozpm gzqu")
     
     # AI Service
     AI_SERVICE_URL: str = os.getenv("AI_SERVICE_URL", "http://localhost:5001")
