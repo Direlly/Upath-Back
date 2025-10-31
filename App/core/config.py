@@ -9,7 +9,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = os.getenv("DATABASE_URL", "mysql+pymysql://user:password@localhost/upath_db")
     
     # JWT
-    JWT_SECRET: str = os.getenv("JWT_SECRET", "your-secret-key")
+    JWT_SECRET: str = os.getenv("JWT_SECRET", "a9f8b7c6d5e378nk863jnu7n6o5p4q3r2s1t0")
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
