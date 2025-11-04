@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.course import Course, CutoffScore, Scholarship
+from App.models.curso import Course, CutoffScore, Scholarship
 from schemas.course import CourseCreate, CutoffUpdate, ScholarshipCreate
 from datetime import datetime
 

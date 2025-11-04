@@ -1,6 +1,6 @@
 from App.core.database import SessionLocal, engine, Base
-from App.models.user import User
-from App.models.course import Course, CutoffScore
+from App.models.usuario import User
+from App.models.curso import Course, CutoffScore
 from App.core.security import get_password_hash
 
 def init_database():

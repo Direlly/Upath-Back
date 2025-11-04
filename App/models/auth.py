@@ -1,58 +1,34 @@
-from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey
-from sqlalchemy.sql import func
+from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey
+from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from core.database import Base
+import datetime
 
-class RefreshToken(Base):
-    __tablename__ = "refresh_tokens"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    token = Column(String(255), unique=True, index=True, nullable=False)
-    expires_at = Column(DateTime(timezone=True), nullable=False)
-    is_revoked = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    # Relação com usuário
-    user = relationship("User", back_populates="refresh_tokens")
+Base = declarative_base()
 
-class PasswordResetToken(Base):
-    __tablename__ = "password_reset_tokens"
+class Usuario(Base):
+    __tablename__ = 'usuario'
     
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    token = Column(String(255), unique=True, index=True, nullable=False)
-    expires_at = Column(DateTime(timezone=True), nullable=False)
-    is_used = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    id_usuario = Column(Integer, primary_key=True, autoincrement=True)
+    nome = Column(String(150), nullable=False)
+    email = Column(String(150), unique=True, nullable=False)
+    senha_hash = Column(String(64), nullable=False)
+    data_cadastro = Column(DateTime, default=datetime.datetime.utcnow)
+    status_conta = Column(Enum('ativo', 'inativo', 'suspenso', name='status_conta_enum'), default='ativo')
     
-    # Relação com usuário
-    user = relationship("User", back_populates="password_reset_tokens")
+    # Relationships
+    perfil = relationship("Perfil", back_populates="usuario", uselist=False)
+    notificacoes = relationship("Notificacao", back_populates="usuario")
+    simulacoes = relationship("Simulacao", back_populates="usuario")
+    testes_vocacionais = relationship("TesteVocacional", back_populates="usuario")
+    relatorios = relationship("Relatorio", back_populates="usuario")
 
-class AdminSession(Base):
-    __tablename__ = "admin_sessions"
+class Perfil(Base):
+    __tablename__ = 'perfil'
     
-    id = Column(Integer, primary_key=True, index=True)
-    session_id = Column(String(255), unique=True, index=True, nullable=False)
-    admin_email = Column(String(100), nullable=False)
-    pin_code = Column(String(4), nullable=False)
-    expires_at = Column(DateTime(timezone=True), nullable=False)
-    is_used = Column(Boolean, default=False)
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-
-class AuditLog(Base):
-    __tablename__ = "audit_logs"
+    id_perfil = Column(Integer, primary_key=True, autoincrement=True)
+    id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), unique=True)
+    pin_seguranca = Column(String(6))
+    nivel_acesso = Column(Enum('estudante', 'admin', name='nivel_acesso_enum'), default='estudante')
     
-    id = Column(Integer, primary_key=True, index=True)
-    acao = Column(String(100), nullable=False)  # criar, editar, excluir, login, etc.
-    alvo = Column(String(255), nullable=False)  # entidade afetada
-    admin_email = Column(String(100), nullable=True)  # quem executou (se admin)
-    user_id = Column(Integer, nullable=True)  # usuário afetado (se aplicável)
-    ip_address = Column(String(45), nullable=True)  # IPv6 suportado
-    user_agent = Column(Text, nullable=True)
-    detalhes = Column(Text, nullable=True)  # dados adicionais em JSON
-    status = Column(String(20), default="sucesso")  # sucesso, erro
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    
-    def __repr__(self):
-        return f"<AuditLog {self.id} - {self.acao} - {self.alvo}>"
+    # Relationships
+    usuario = relationship("Usuario", back_populates="perfil")

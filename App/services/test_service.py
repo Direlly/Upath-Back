@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from models.test import VocationalTest, TestQuestion, SuggestedCourse
+from App.models.teste import VocationalTest, TestQuestion, SuggestedCourse
 from schemas.test import TestStart, TestAnswer, TestFinish
 from datetime import datetime
 import requests

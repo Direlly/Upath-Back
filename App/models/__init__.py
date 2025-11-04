@@ -2,17 +2,13 @@
 Módulo de modelos de dados (SQLAlchemy).
 """
 
-from models.user import User, UserNotificationSettings
 from models.auth import RefreshToken, PasswordResetToken, AdminSession, AuditLog
-from models.test import VocationalTest, TestQuestion, SuggestedCourse
-from models.simulation import Simulation, SimulationResult
-from models.course import Course, CutoffScore, Scholarship
-from models.notification import Notification
+from App.models.teste import VocationalTest, TestQuestion, SuggestedCourse
+from App.models.simulacao import Simulation, SimulationResult
+from App.models.curso import Course, CutoffScore, Scholarship
+from App.models.notificacao import Notification
 
 __all__ = [
-    # User models
-    "User",
-    "UserNotificationSettings",
     
     # Auth models
     "RefreshToken",

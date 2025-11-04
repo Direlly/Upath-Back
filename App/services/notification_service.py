@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.notification import Notification
-from models.user import UserNotificationSettings
+from App.models.notificacao import Notification
+from App.models.usuario import UserNotificationSettings
 from schemas.notification import NotificationSettings
 from typing import List
 

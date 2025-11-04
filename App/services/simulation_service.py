@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
-from models.simulation import Simulation, SimulationResult
-from models.course import CutoffScore
+from App.models.simulacao import Simulation, SimulationResult
+from App.models.curso import CutoffScore
 from schemas.simulation import SimulationCreate
 from typing import List
 
