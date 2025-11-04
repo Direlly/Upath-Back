@@ -1,10 +1,11 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPBearer
-from app.core.config import settings
-from app.core.database import engine, Base
-from app.routes import (
-    auth, users, tests, simulations, 
+from App.routes import user
+from core.config import settings
+from core.database import engine, Base
+from routes import (
+    auth, tests, simulations, 
     courses, notifications, admin, ia
 )
 
@@ -28,7 +29,7 @@ app.add_middleware(
 
 # Rotas
 app.include_router(auth.router, prefix="/api/auth", tags=["Autenticação"])
-app.include_router(users.router, prefix="/api/user", tags=["Usuário"])
+app.include_router(user.router, prefix="/api/user", tags=["Usuário"])
 app.include_router(tests.router, prefix="/api/test", tags=["Testes Vocacionais"])
 app.include_router(simulations.router, prefix="/api/simulation", tags=["Simulações"])
 app.include_router(courses.router, prefix="/api/courses", tags=["Cursos"])

@@ -1,5 +1,5 @@
 from App.core.database import SessionLocal, engine, Base
-from App.models.usuario import User
+from App.models.auth import User
 from App.models.curso import Course, CutoffScore
 from App.core.security import get_password_hash
 
@@ -30,8 +30,6 @@ def init_database():
             )
             db.add(student_user)
         
-        # Adicionar cursos de exemplo (código anterior mantido)
-        # ... (o mesmo código de cursos que já existia)
         
         db.commit()
         print("✅ Banco de dados inicializado com sucesso!")

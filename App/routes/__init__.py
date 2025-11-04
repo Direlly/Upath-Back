@@ -3,7 +3,7 @@ Módulo de rotas da API FastAPI.
 """
 
 from routes.auth import router as auth_router
-from routes.users import router as users_router
+from App.routes.user import router as users_router
 from routes.tests import router as tests_router
 from routes.simulations import router as simulations_router
 from routes.courses import router as courses_router
