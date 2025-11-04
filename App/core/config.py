@@ -6,7 +6,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "mysql+pymysql://user:password@localhost/upath_db")
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "mysql+pymysql://root:Abi369nt45@localhost/upath_db")
     
     # JWT
     JWT_SECRET: str = os.getenv("JWT_SECRET", "a9f8b7c6d5e378nk863jnu7n6o5p4q3r2s1t0")
