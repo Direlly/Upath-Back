@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import get_current_admin
-from schemas.course import CourseCreate, CutoffUpdate, ScholarshipCreate
+from App.schemas.curso import CourseCreate, CutoffUpdate, ScholarshipCreate
 from services.course_service import CourseService
 from services.email_service import EmailService
 import secrets
@@ -10,7 +10,7 @@ from datetime import datetime, timedelta
 
 router = APIRouter()
 
-# Simulação de sessões admin (em produção usar Redis ou database)
+# Simulação de sessões admin temporárias para 2FA
 admin_sessions = {}
 
 # Rota para login admin e envio do PIN 2FA

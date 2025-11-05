@@ -2,34 +2,33 @@
 Módulo de modelos de dados (SQLAlchemy).
 """
 
-from models.auth import RefreshToken, PasswordResetToken, AdminSession, AuditLog
-from App.models.teste import VocationalTest, TestQuestion, SuggestedCourse
-from App.models.simulacao import Simulation, SimulationResult
-from App.models.curso import Course, CutoffScore, Scholarship
-from App.models.notificacao import Notification
+from models.auth import Usuario, Perfil
+from App.models.teste import TesteVocacional, Pergunta, Resposta
+from App.models.simulacao import Simulacao, SimulacaoCurso
+from App.models.curso import Curso, AreaConhecimento, NotaCorte
+from App.models.notificacao import Notificacao, Relatorio
 
 __all__ = [
     
     # Auth models
-    "RefreshToken",
-    "PasswordResetToken", 
-    "AdminSession",
-    "AuditLog",
+    "Usuario",
+    "Perfil", 
     
-    # Test models
-    "VocationalTest",
-    "TestQuestion",
-    "SuggestedCourse", 
+    # Teste models
+    "TesteVocacional",
+    "Pergunta",
+    "Resposta", 
     
-    # Simulation models
-    "Simulation",
-    "SimulationResult",
+    # Simulacao models
+    "Simulacao",
+    "SimulacaoCurso",
     
-    # Course models
-    "Course",
-    "CutoffScore", 
-    "Scholarship",
+    # Curso models
+    "Curso",
+    "AreaConhecimento", 
+    "NotaCorte",
     
-    # Notification models
-    "Notification"
+    # Notificacao models
+    "Notificacao",
+    "Relatorio"
 ]

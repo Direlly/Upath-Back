@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from App.models.curso import Course, CutoffScore, Scholarship
-from schemas.course import CourseCreate, CutoffUpdate, ScholarshipCreate
+from App.schemas.curso import CourseCreate, CutoffUpdate, ScholarshipCreate
 from datetime import datetime
 
 class CourseService:

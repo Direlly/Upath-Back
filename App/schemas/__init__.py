@@ -38,7 +38,7 @@ from schemas.simulation import (
     SimulationHistory
 )
 
-from schemas.course import (
+from App.schemas.curso import (
     CourseBase,
     CourseCreate,
     CourseResponse,
