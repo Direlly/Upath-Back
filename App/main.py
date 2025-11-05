@@ -4,6 +4,7 @@ from fastapi.security import HTTPBearer
 from App.routes import user
 from core.config import settings
 from core.database import engine, Base
+from sqlalchemy import text, inspect
 from routes import (
     auth, tests, simulations, 
     courses, notifications, admin, ia

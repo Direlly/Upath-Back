@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, DateTime, Enum, ForeignKey
 from sqlalchemy.orm import relationship
-from auth import Base
+from core.database import Base
 import datetime
 
 class Notificacao(Base):

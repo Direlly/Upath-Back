@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DECIMAL, Enum, ForeignKey
 from sqlalchemy.orm import relationship
-from auth import Base
+from core.database import Base
 
 class Simulacao(Base):
     __tablename__ = 'simulacao'

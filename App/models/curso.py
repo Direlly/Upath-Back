@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, Enum, DECIMAL
 from sqlalchemy.orm import relationship
-from auth import Base
+from core.database import Base
 
 class AreaConhecimento(Base):
     __tablename__ = 'area_conhecimento'
@@ -31,7 +31,7 @@ class NotaCorte(Base):
     
     id_nota = Column(Integer, primary_key=True, autoincrement=True)
     id_curso = Column(Integer, ForeignKey('curso.id_curso'))
-    ano = Column(Integer)  # Year type mapped to Integer
+    ano = Column(Integer)  
     estado = Column(String(2))
     modalidade = Column(Enum('ampla', 'cotas', name='modalidade_enum'))
     valor_nota = Column(DECIMAL(6, 2))

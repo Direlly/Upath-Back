@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, Date, ForeignKey
 from sqlalchemy.orm import relationship
-from auth import Base
+from core.database import Base
 
 class TesteVocacional(Base):
     __tablename__ = 'teste_vocacional'
