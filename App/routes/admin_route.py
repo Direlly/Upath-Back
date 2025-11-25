@@ -2,8 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from core.database import get_db
 from core.security import get_current_admin
-from App.schemas.curso import CourseCreate, CutoffUpdate, ScholarshipCreate
-from services.course_service import CourseService
+from schemas.cursos_schemas import  CourseCreate
+from services.cursos_service import CourseService
 from services.email_service import EmailService
 import secrets
 from datetime import datetime, timedelta
