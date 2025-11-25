@@ -1,35 +1,33 @@
-from sqlalchemy import Column, Integer, String, DateTime, Enum, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
-from core.database import Base
 import datetime
 
 Base = declarative_base()
 
 class Usuario(Base):
-    __tablename__ = 'usuario'
+    __tablename__ = "usuarios"
     
     id_usuario = Column(Integer, primary_key=True, autoincrement=True)
-    nome = Column(String(150), nullable=False)
-    email = Column(String(150), unique=True, nullable=False)
-    senha_hash = Column(String(64), nullable=False)
+    nome = Column(String(100), nullable=False)
+    email = Column(String(100), unique=True, nullable=False)
+    senha_hash = Column(String(255), nullable=False)
     data_cadastro = Column(DateTime, default=datetime.datetime.utcnow)
-    status_conta = Column(Enum('ativo', 'inativo', 'suspenso', name='status_conta_enum'), default='ativo')
-    
-    # Relationships
-    perfil = relationship("Perfil", back_populates="usuario", uselist=False)
-    notificacoes = relationship("Notificacao", back_populates="usuario")
-    simulacoes = relationship("Simulacao", back_populates="usuario")
-    testes_vocacionais = relationship("TesteVocacional", back_populates="usuario")
-    relatorios = relationship("Relatorio", back_populates="usuario")
+    status_conta = Column(String(20), default='ativo')
 
 class Perfil(Base):
-    __tablename__ = 'perfil'
+    __tablename__ = "perfis"
     
     id_perfil = Column(Integer, primary_key=True, autoincrement=True)
-    id_usuario = Column(Integer, ForeignKey('usuario.id_usuario'), unique=True)
-    pin_seguranca = Column(String(6))
-    nivel_acesso = Column(Enum('estudante', 'admin', name='nivel_acesso_enum'), default='estudante')
+    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    nivel_acesso = Column(String(50), default='estudante')
+
+class TokenRecuperacao(Base):
+    __tablename__ = "tokens_recuperacao"
     
-    # Relationships
-    usuario = relationship("Usuario", back_populates="perfil")
+    id_token = Column(Integer, primary_key=True, autoincrement=True)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    token = Column(String(100), unique=True, nullable=False)
+    data_criacao = Column(DateTime, default=datetime.datetime.utcnow)
+    data_expiracao = Column(DateTime, nullable=False)
+    utilizado = Column(Boolean, default=False)

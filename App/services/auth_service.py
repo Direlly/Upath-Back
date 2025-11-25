@@ -1,97 +1,276 @@
 from sqlalchemy.orm import Session
-from App.models.usuario import User
-from core.security import get_password_hash, verify_password
-from schemas.user import UserCreate
-from datetime import datetime
-from services.audit_service import AuditService
-from fastapi import Request
+import re
+import datetime
+from typing import Optional, Dict, Any
+import secrets
+import string
+
+from core.security import get_password_hash, verify_password, criar_token_recuperacao_senha
+from models.auth import Usuario, Perfil, TokenRecuperacao
 
 class AuthService:
     def __init__(self, db: Session):
         self.db = db
-        self.audit_service = AuditService(db)
-    
-    def get_user_by_email(self, email: str) -> User:
-        return self.db.query(User).filter(User.email == email).first()
-    
-    def create_user(self, user_data: UserCreate, request: Request = None) -> User:
-        hashed_password = get_password_hash(user_data.senha)
-        
-        user = User(
-            nome=user_data.nome,
-            email=user_data.email,
-            senha_hash=hashed_password
-        )
-        
-        self.db.add(user)
-        self.db.commit()
-        self.db.refresh(user)
-        
-        # Log de auditoria
-        self.audit_service.log_action(
-            acao="cadastro_usuario",
-            alvo=f"Usuário {user.email}",
-            user_id=user.id,
-            ip_address=request.client.host if request else None,
-            user_agent=request.headers.get("user-agent") if request else None,
-            detalhes={"nome": user.nome, "email": user.email}
-        )
-        
-        return user
-    
-    def authenticate_user(self, email: str, password: str, request: Request = None) -> User:
-        user = self.get_user_by_email(email)
-        if not user:
-            return None
-        
-        if not verify_password(password, user.senha_hash):
-            # Log de tentativa falha
-            self.audit_service.log_action(
-                acao="tentativa_login",
-                alvo=f"Usuário {email}",
-                ip_address=request.client.host if request else None,
-                user_agent=request.headers.get("user-agent") if request else None,
-                status="erro",
-                detalhes={"motivo": "senha_incorreta"}
+
+    def registrar_usuario(self, nome: str, email: str, confirm_email: str, 
+                         senha: str, confirm_senha: str) -> dict:
+        """
+        Registra um novo usuário no sistema 
+        """
+        try:
+            print(f"🔧 Tentando registrar usuário: {email}")
+            
+            # Validações básicas
+            if email != confirm_email:
+                return {"success": False, "mensagem": "Emails não coincidem"}
+            
+            if senha != confirm_senha:
+                return {"success": False, "mensagem": "Senhas não coincidem"}
+            
+            # Verifica se email já existe
+            usuario_existente = self.db.query(Usuario).filter(
+                Usuario.email == email
+            ).first()
+            
+            if usuario_existente:
+                return {"success": False, "mensagem": "Email já cadastrado"}
+            
+            # Valida nome
+            if not re.match(r'^[A-Za-zÀ-ÿ\s]{2,100}$', nome.strip()):
+                return {"success": False, "mensagem": "Nome deve conter apenas letras e espaços"}
+            
+            # Valida senha 
+            validacao_senha = self._validar_senha(senha)
+            if not validacao_senha["success"]:
+                return validacao_senha
+            
+            # Cria hash da senha 
+            print("🔧 Gerando hash da senha...")
+            senha_hash = get_password_hash(senha)
+            print("✅ Hash gerado com sucesso")
+            
+            # Cria usuário
+            novo_usuario = Usuario(
+                nome=nome.strip(),
+                email=email.lower().strip(),
+                senha_hash=senha_hash,
+                data_cadastro=datetime.datetime.utcnow(),
+                status_conta='ativo'
             )
-            return None
-        
-        if not user.is_active:
-            return None
-        
-        # Log de login bem-sucedido
-        self.audit_service.log_action(
-            acao="login",
-            alvo=f"Usuário {user.email}",
-            user_id=user.id,
-            ip_address=request.client.host if request else None,
-            user_agent=request.headers.get("user-agent") if request else None,
-            status="sucesso"
-        )
-        
-        return user
-    
-    def update_last_login(self, user_id: int):
-        user = self.db.query(User).filter(User.id == user_id).first()
-        if user:
-            user.last_login = datetime.utcnow()
+            
+            self.db.add(novo_usuario)
             self.db.commit()
-    
-    def verify_admin_credentials(self, email: str, password: str, request: Request = None) -> User:
-        user = self.get_user_by_email(email)
-        if not user or user.role != "admin":
-            return None
+            self.db.refresh(novo_usuario)
+            print(f"✅ Usuário criado com ID: {novo_usuario.id_usuario}")
+            
+            # Tenta criar perfil
+            try:
+                perfil = Perfil(
+                    id_usuario=novo_usuario.id_usuario,
+                    nivel_acesso="estudante"
+                )
+                self.db.add(perfil)
+                self.db.commit()
+                print("✅ Perfil criado com sucesso")
+            except Exception as e:
+                print(f"⚠️  Perfil não criado: {e}")
+            
+            return {
+                "success": True,
+                "id_usuario": novo_usuario.id_usuario,
+                "nome": novo_usuario.nome,
+                "email": novo_usuario.email,
+                "mensagem": "Usuário registrado com sucesso"
+            }
+            
+        except Exception as e:
+            self.db.rollback()
+            print(f"Erro no registro: {str(e)}")
+            return {"success": False, "mensagem": f"Erro ao registrar usuário: {str(e)}"}
+
+    def _validar_senha(self, senha: str) -> Dict[str, Any]:
+        """
+        Valida os requisitos da senha
+        """
+        if len(senha) < 8:
+            return {"success": False, "mensagem": "Senha deve ter pelo menos 8 caracteres"}
         
-        if not verify_password(password, user.senha_hash):
-            # Log de tentativa admin falha
-            self.audit_service.log_action(
-                acao="tentativa_login_admin",
-                alvo=f"Admin {email}",
-                ip_address=request.client.host if request else None,
-                user_agent=request.headers.get("user-agent") if request else None,
-                status="erro",
-                detalhes={"motivo": "credenciais_invalidas"}
+        if not any(c.isupper() for c in senha):
+            return {"success": False, "mensagem": "Senha deve ter pelo menos 1 letra maiúscula"}
+        
+        if not any(c.islower() for c in senha):
+            return {"success": False, "mensagem": "Senha deve ter pelo menos 1 letra minúscula"}
+        
+        if not any(c.isdigit() for c in senha):
+            return {"success": False, "mensagem": "Senha deve ter pelo menos 1 número"}
+        
+        caracteres_especiais = '!@#$%^&*()_+-=[]{}|;:,.<>?`~'
+        if not any(c in caracteres_especiais for c in senha):
+            return {"success": False, "mensagem": "Senha deve ter pelo menos 1 caractere especial"}
+        
+        return {"success": True}
+
+    def autenticar_usuario(self, email: str, senha: str) -> Optional[Usuario]:
+        try:
+            print(f"🔐 Tentando autenticar: {email}")
+            
+            usuario = self.db.query(Usuario).filter(
+                Usuario.email == email.lower().strip(),
+                Usuario.status_conta == 'ativo'
+            ).first()
+            
+            if not usuario:
+                print("❌ Usuário não encontrado ou inativo")
+                return None
+            
+            print(f"✅ Usuário encontrado: {usuario.nome}")
+            print(f"🔑 Verificando senha...")
+            
+            # Debug: verificar o hash da senha
+            print(f"Hash no banco: {usuario.senha_hash}")
+            print(f"Senha fornecida: {senha}")
+            
+            senha_correta = verify_password(senha, usuario.senha_hash) # type: ignore
+            print(f"Senha correta: {senha_correta}")
+            
+            if not senha_correta:
+                print("❌ Senha incorreta")
+                return None
+            
+            print(f"✅ Autenticação bem-sucedida para: {usuario.email}")
+            return usuario
+                
+        except Exception as e:
+            print(f"💥 Erro na autenticação: {str(e)}")
+            return None
+
+    def enviar_email_recuperacao(self, email: str) -> Dict[str, Any]:
+        """
+        Envia email de recuperação de senha
+        """
+        try:
+            # Verifica se usuário existe
+            usuario = self.db.query(Usuario).filter(
+                Usuario.email == email.lower().strip(),
+                Usuario.status_conta == 'ativo'
+            ).first()
+            
+            if not usuario:
+                return {"success": False, "mensagem": "Email não encontrado"}
+            
+            # Gera token de recuperação
+            token = self._gerar_token_recuperacao()
+            
+            # Salva token no banco
+            token_recuperacao = TokenRecuperacao(
+                id_usuario=usuario.id_usuario,
+                token=token,
+                data_expiracao=datetime.datetime.utcnow() + datetime.timedelta(hours=24),
+                utilizado=False
             )
-            return None
-        
-        return user
+            
+            self.db.add(token_recuperacao)
+            self.db.commit()
+            
+            # Simula envio de email (implementar serviço de email real)
+            print(f"📧 Email de recuperação enviado para {email}")
+            print(f"🔑 Token de recuperação: {token}")
+            
+            return {
+                "success": True, 
+                "mensagem": "Email de recuperação enviado com sucesso",
+                "token": token  # Em produção, não retornar o token
+            }
+            
+        except Exception as e:
+            self.db.rollback()
+            print(f"Erro ao enviar email de recuperação: {str(e)}")
+            return {"success": False, "mensagem": f"Erro ao enviar email de recuperação: {str(e)}"}
+
+    def redefinir_senha(self, token: str, nova_senha: str) -> Dict[str, Any]:
+        """
+        Redefine a senha do usuário usando token de recuperação
+        """
+        try:
+            # Busca token válido
+            token_recuperacao = self.db.query(TokenRecuperacao).filter(
+                TokenRecuperacao.token == token,
+                TokenRecuperacao.utilizado == False,
+                TokenRecuperacao.data_expiracao > datetime.datetime.utcnow()
+            ).first()
+            
+            if not token_recuperacao:
+                return {"success": False, "mensagem": "Token inválido ou expirado"}
+            
+            # Valida nova senha
+            validacao_senha = self._validar_senha(nova_senha)
+            if not validacao_senha["success"]:
+                return validacao_senha
+            
+            # Busca usuário
+            usuario = self.db.query(Usuario).filter(
+                Usuario.id_usuario == token_recuperacao.id_usuario
+            ).first()
+            
+            if not usuario:
+                return {"success": False, "mensagem": "Usuário não encontrado"}
+            
+            # Atualiza senha
+            usuario.senha_hash = get_password_hash(nova_senha) # type: ignore
+            token_recuperacao.utilizado = True # type: ignore
+            
+            self.db.commit()
+            
+            print(f"✅ Senha redefinida para usuário: {usuario.email}")
+            
+            return {
+                "success": True, 
+                "mensagem": "Senha redefinida com sucesso"
+            }
+            
+        except Exception as e:
+            self.db.rollback()
+            print(f"Erro ao redefinir senha: {str(e)}")
+            return {"success": False, "mensagem": f"Erro ao redefinir senha: {str(e)}"}
+
+    def _gerar_token_recuperacao(self, length: int = 32) -> str:
+        """
+        Gera token aleatório para recuperação de senha
+        """
+        caracteres = string.ascii_letters + string.digits
+        return ''.join(secrets.choice(caracteres) for _ in range(length))
+
+    def alterar_senha(self, id_usuario: int, senha_atual: str, nova_senha: str) -> Dict[str, Any]:
+        """
+        Altera senha do usuário logado
+        """
+        try:
+            usuario = self.db.query(Usuario).filter(
+                Usuario.id_usuario == id_usuario
+            ).first()
+            
+            if not usuario:
+                return {"success": False, "mensagem": "Usuário não encontrado"}
+            
+            # Verifica senha atual
+            if not verify_password(senha_atual, usuario.senha_hash): # type: ignore
+                return {"success": False, "mensagem": "Senha atual incorreta"}
+            
+            # Valida nova senha
+            validacao_senha = self._validar_senha(nova_senha)
+            if not validacao_senha["success"]:
+                return validacao_senha
+            
+            # Atualiza senha
+            usuario.senha_hash = get_password_hash(nova_senha) # type: ignore
+            self.db.commit()
+            
+            return {
+                "success": True,
+                "mensagem": "Senha alterada com sucesso"
+            }
+            
+        except Exception as e:
+            self.db.rollback()
+            print(f"Erro ao alterar senha: {str(e)}")
+            return {"success": False, "mensagem": f"Erro ao alterar senha: {str(e)}"}

@@ -1,10 +1,9 @@
 import os
-from pydantic_settings import BaseSettings
 from dotenv import load_dotenv
 
 load_dotenv()
 
-class Settings(BaseSettings):
+class Settings:
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "mysql+pymysql://root:Abi369nt45@localhost/upath_db")
     
@@ -15,7 +14,7 @@ class Settings(BaseSettings):
     
     # Email
     SMTP_SERVER: str = os.getenv("SMTP_SERVER", "smtp.gmail.com")
-    SMTP_PORT: int = int(os.getenv("SMTP_PORT", 587))
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
     SMTP_USERNAME: str = os.getenv("SMTP_USERNAME", "upath.contato@gmail.com")
     SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "zzwv mecg ozpm gzqu")
     
