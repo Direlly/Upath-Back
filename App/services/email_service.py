@@ -54,7 +54,7 @@ class EmailService:
             print(f"Erro ao enviar email: {e}")
             return False
     
-    # Função genérica para envio de email
+    # Função para envio de email
     def send_email(self, to_email: str, subject: str, body: str) -> bool:
         try:
             msg = MIMEMultipart()

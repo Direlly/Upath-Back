@@ -31,12 +31,9 @@ app.add_middleware(
 # Rotas
 app.include_router(auth.router, prefix="/api/auth", tags=["Autenticação"])
 app.include_router(user.router, prefix="/api/user", tags=["Usuário"])
-app.include_router(tests.router, prefix="/api/test", tags=["Testes Vocacionais"])
 app.include_router(simulations.router, prefix="/api/simulation", tags=["Simulações"])
 app.include_router(courses.router, prefix="/api/courses", tags=["Cursos"])
-app.include_router(notifications.router, prefix="/api/notifications", tags=["Notificações"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Administração"])
-app.include_router(ia.router, prefix="/api/ia", tags=["Inteligência Artificial"])
 
 @app.get("/")
 async def root():
