@@ -1,25 +1,33 @@
 from pydantic import BaseModel, EmailStr, validator
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime
 
-class UserBase(BaseModel):
-    nome: str
-    email: EmailStr
+class ProfileBase(BaseModel):
+    """Base para schemas de perfil"""
+    nome: Optional[str] = None
 
-class UserCreate(UserBase):
-    confirmEmail: EmailStr
-    senha: str
-    confirmSenha: str
+class ProfileUpdate(ProfileBase):
+    """Schema para atualização de perfil (apenas nome)"""
+    novo_nome: str
     
-    @validator('nome')
+    @validator('novo_nome')
     def validate_nome(cls, v):
         import re
-        if not re.match(r'^[A-Za-zÀ-ÿ\s]{2,100}$', v):
+        v = v.strip()
+        if len(v) < 2 or len(v) > 100:
+            raise ValueError('Nome deve ter entre 2 e 100 caracteres')
+        if not re.match(r'^[A-Za-zÀ-ÿ\s]+$', v):
             raise ValueError('Nome deve conter apenas letras e espaços')
         return v
+
+class PasswordUpdate(BaseModel):
+    """Schema para atualização de senha"""
+    senha_atual: str
+    nova_senha: str
+    confirmar_senha: str
     
-    @validator('senha')
-    def validate_senha(cls, v):
+    @validator('nova_senha')
+    def validate_nova_senha(cls, v):
         if len(v) < 8:
             raise ValueError('Senha deve ter pelo menos 8 caracteres')
         if not any(c.isupper() for c in v):
@@ -28,45 +36,82 @@ class UserCreate(UserBase):
             raise ValueError('Senha deve ter pelo menos 1 letra minúscula')
         if not any(c.isdigit() for c in v):
             raise ValueError('Senha deve ter pelo menos 1 número')
-        if not any(c in '!@#$%^&*()_+-=[]{}|;:,.<>?`~' for c in v):
+        caracteres_especiais = '!@#$%^&*()_+-=[]{}|;:,.<>?`~'
+        if not any(c in caracteres_especiais for c in v):
             raise ValueError('Senha deve ter pelo menos 1 caractere especial')
         return v
     
-    @validator('confirmSenha')
+    @validator('confirmar_senha')
     def passwords_match(cls, v, values):
-        if 'senha' in values and v != values['senha']:
-            raise ValueError('Senhas não coincidem')
+        if 'nova_senha' in values and v != values['nova_senha']:
+            raise ValueError('As senhas não coincidem')
+        return v
+
+class ProfileCompleteUpdate(BaseModel):
+    """Schema para atualização completa do perfil (nome e senha)"""
+    novo_nome: Optional[str] = None
+    nova_senha: Optional[str] = None
+    confirmar_senha: Optional[str] = None
+    
+    @validator('novo_nome')
+    def validate_nome(cls, v):
+        if v is None:
+            return v
+        import re
+        v = v.strip()
+        if len(v) < 2 or len(v) > 100:
+            raise ValueError('Nome deve ter entre 2 e 100 caracteres')
+        if not re.match(r'^[A-Za-zÀ-ÿ\s]+$', v):
+            raise ValueError('Nome deve conter apenas letras e espaços')
         return v
     
-    @validator('confirmEmail')
-    def emails_match(cls, v, values):
-        if 'email' in values and v != values['email']:
-            raise ValueError('Emails não coincidem')
+    @validator('nova_senha')
+    def validate_nova_senha(cls, v, values):
+        if v is None:
+            return v
+        if len(v) < 8:
+            raise ValueError('Senha deve ter pelo menos 8 caracteres')
+        if not any(c.isupper() for c in v):
+            raise ValueError('Senha deve ter pelo menos 1 letra maiúscula')
+        if not any(c.islower() for c in v):
+            raise ValueError('Senha deve ter pelo menos 1 letra minúscula')
+        if not any(c.isdigit() for c in v):
+            raise ValueError('Senha deve ter pelo menos 1 número')
+        caracteres_especiais = '!@#$%^&*()_+-=[]{}|;:,.<>?`~'
+        if not any(c in caracteres_especiais for c in v):
+            raise ValueError('Senha deve ter pelo menos 1 caractere especial')
+        return v
+    
+    @validator('confirmar_senha')
+    def passwords_match(cls, v, values):
+        if 'nova_senha' in values and values['nova_senha'] is not None:
+            if v != values['nova_senha']:
+                raise ValueError('As senhas não coincidem')
         return v
 
-class UserLogin(BaseModel):
-    email: EmailStr
-    senha: str
+class ProfileResponse(BaseModel):
+    """Resposta com dados do perfil"""
+    success: bool
+    data: Dict[str, Any]
+    message: Optional[str] = None
 
-class UserResponse(UserBase):
+class UserProfileData(BaseModel):
+    """Dados do usuário para resposta"""
     id: int
-    foto_url: Optional[str]
-    role: str
-    last_login: Optional[datetime]
-    
-    class Config:
-        from_attributes = True
+    nome: str
+    email: EmailStr
+    data_cadastro: datetime
+    ultimo_login: Optional[datetime]
+    status: str
+    estatisticas: Optional[Dict[str, Any]] = None
 
-class UserProfileUpdate(BaseModel):
-    nome: Optional[str] = None
-    foto_url: Optional[str] = None
+class ProfileUpdateResponse(BaseModel):
+    """Resposta da atualização de perfil"""
+    success: bool
+    message: str
+    data: Optional[Dict[str, Any]] = None
 
-class PasswordUpdate(BaseModel):
-    current_password: str
-    new_password: str
-    confirm_password: str
-    
-    @validator('new_password')
-    def validate_new_password(cls, v):
-        # Reutiliza a validação de senha do UserCreate
-        return UserCreate.validate_senha(v, {'senha': v})
+class PasswordUpdateResponse(BaseModel):
+    """Resposta da atualização de senha"""
+    success: bool
+    message: str

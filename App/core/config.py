@@ -21,6 +21,16 @@ class Settings:
     # AI Service
     AI_SERVICE_URL: str = os.getenv("AI_SERVICE_URL", "http://localhost:5001")
     
+    # Password Requirements
+    PASSWORD_MIN_LENGTH: int = 8
+    PASSWORD_REQUIRE_UPPERCASE: bool = True
+    PASSWORD_REQUIRE_LOWERCASE: bool = True
+    PASSWORD_REQUIRE_NUMBER: bool = True
+    PASSWORD_REQUIRE_SPECIAL: bool = True
+    
+    # Admin PIN
+    ADMIN_PIN_LENGTH: int = 4
+    
     class Config:
         env_file = ".env"
 
