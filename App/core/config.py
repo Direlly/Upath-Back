@@ -4,8 +4,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class Settings:
-    # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "mysql+pymysql://root:Abi369nt45@localhost/upath_db")
+    # Database - CORRIGIDO
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "mysql+pymysql://root:Abi369nt45@localhost:3306/upath_db")
     
     # JWT
     JWT_SECRET: str = os.getenv("JWT_SECRET", "a9f8b7c6d5e378nk863jnu7n6o5p4q3r2s1t0")

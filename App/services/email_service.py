@@ -13,7 +13,7 @@ class EmailService:
     def send_password_reset_email(self, to_email: str, reset_token: str) -> bool:
         try:
             subject = "Redefinição de Senha - UPath"
-            reset_url = f"http://localhost:3000/reset-password?token={reset_token}"
+            reset_url = f"http://localhost:5173/reset-password?token={reset_token}"
             
             body = f"""
             Olá,
@@ -122,5 +122,5 @@ class EmailService:
             print(f"✅ Email enviado para: {to_email}")
             return True
         except Exception as e:
-            print(f"❌ Erro SMTP: {e}")
+            print(f"Erro SMTP: {e}")
             return False
