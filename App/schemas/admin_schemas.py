@@ -1,98 +1,66 @@
-from pydantic import BaseModel, EmailStr, validator
+from pydantic import BaseModel, EmailStr
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-class AdminLogin(BaseModel):
-    """Schema para login de administrador"""
-    email: EmailStr
-    senha: str
+class LoginRequest(BaseModel):
+    username: str
+    password: str
 
-class AdminAuth(BaseModel):
-    """Schema para autenticação com PIN do administrador"""
+class LoginResponse(BaseModel):
+    success: bool
+    token: str
+    message: str
+
+class PinValidationRequest(BaseModel):
     session_id: str
     pin: str
-    
-    @validator('pin')
-    def validate_pin_length(cls, v):
-        if len(v) != 4 or not v.isdigit():
-            raise ValueError('PIN deve conter exatamente 4 dígitos numéricos')
-        return v
 
-class AdminLoginResponse(BaseModel):
-    """Resposta do login de administrador"""
+class PinValidationResponse(BaseModel):
     success: bool
-    data: Optional[Dict[str, Any]] = None
     message: Optional[str] = None
+    token: Optional[str] = None
 
-class AdminAuthResponse(BaseModel):
-    """Resposta da autenticação com PIN"""
-    success: bool
-    data: Optional[Dict[str, Any]] = None
-    message: Optional[str] = None
-
-class AdminProfileResponse(BaseModel):
-    """Resposta com dados do administrador"""
+class AdminResponse(BaseModel):
     id: int
+    username: str
+    name: str
     email: str
-    nome: str
-    role: str = "admin"
 
     class Config:
         from_attributes = True
 
-class UserSearchRequest(BaseModel):
-    """Schema para pesquisa de usuário por ID"""
-    user_id: Optional[str] = None
-
-class UserCardResponse(BaseModel):
-    """Schema para card do usuário no admin"""
+class UserResponse(BaseModel):
     id: int
-    nome: str
+    name: str
     email: str
-    status: str
-    ultimo_login: Optional[datetime]
-    reset_pendente: bool
-    data_cadastro: datetime
+    active: bool
 
-class UserListResponse(BaseModel):
-    """Resposta com lista de usuários"""
-    usuarios: List[UserCardResponse]
-    pagina: int
-    por_pagina: int
+    class Config:
+        from_attributes = True
+
+class AccessHistoryResponse(BaseModel):
+    id: int
+    user_id: int
+    user_name: str
+    timestamp: datetime
+
+    class Config:
+        from_attributes = True
+
+class PaginatedAccessHistory(BaseModel):
+    items: List[AccessHistoryResponse]
+    page: int
+    page_size: int
     total: int
-    total_paginas: int
+    total_pages: int
 
-class UserActionResponse(BaseModel):
-    """Resposta para ações em usuários"""
-    success: bool
-    message: str
-
-class MetricsRequest(BaseModel):
-    """Schema para filtro de métricas"""
-    periodo: str = "diario"  # diario, semanal, mensal
-    
-    @validator('periodo')
-    def validate_periodo(cls, v):
-        if v not in ['diario', 'semanal', 'mensal']:
-            raise ValueError('Período deve ser: diario, semanal ou mensal')
-        return v
-
-class MetricsResponse(BaseModel):
-    """Resposta com métricas de usuários"""
-    usuarios_ativos: int
-    novos_usuarios: int
-    logins_por_dia: List[Dict[str, Any]]
-    periodo: str
-
-class AdminStatsResponse(BaseModel):
-    """Estatísticas do dashboard administrativo"""
+class SystemStatsResponse(BaseModel):
     total_usuarios: int
     usuarios_ativos: int
-    usuarios_bloqueados: int
-    logins_24h: int
+    total_acessos: int
+    acessos_hoje: int
 
-class AdminHomeResponse(BaseModel):
-    """Resposta da home do administrador"""
-    success: bool
-    data: Dict[str, Any]
-    message: Optional[str] = None
+class AdminStatsResponse(BaseModel):
+    estatisticas: SystemStatsResponse
+    usuarios_ativos: List[UserResponse]
+    acessos_recentes: List[AccessHistoryResponse]

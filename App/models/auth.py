@@ -1,88 +1,89 @@
 from sqlalchemy import Column, Integer, String, DateTime, Boolean, Text, ForeignKey
-from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 import datetime
-
-Base = declarative_base()
+from core.database import Base
 
 class Usuario(Base):
     __tablename__ = "usuarios"
     
-    id_usuario = Column(Integer, primary_key=True, autoincrement=True, index=True)
+    id_usuario = Column(Integer, primary_key=True, autoincrement=True)
     nome = Column(String(100), nullable=False)
-    email = Column(String(100), unique=True, nullable=False, index=True)
+    email = Column(String(100), unique=True, nullable=False)
     senha_hash = Column(String(255), nullable=False)
+    foto_url = Column(String(255), nullable=True)
     data_cadastro = Column(DateTime, default=datetime.datetime.utcnow)
-    data_atualizacao = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
-    status_conta = Column(String(20), default='ativo')  # ativo, bloqueado, inativo
-    role = Column(String(20), default='student')  # student, admin
+    status_conta = Column(String(20), default='ativo')
+    ultimo_login = Column(DateTime, nullable=True)
     
     # Relacionamentos
     perfil = relationship("Perfil", back_populates="usuario", uselist=False)
+    administrador = relationship("Administrador", back_populates="usuario", uselist=False)
     tokens_recuperacao = relationship("TokenRecuperacao", back_populates="usuario")
-    historico_login = relationship("HistoricoLogin", back_populates="usuario")
-    testes_vocacionais = relationship("TesteVocacional", back_populates="usuario")
-    simulacoes_enem = relationship("SimulacaoENEM", back_populates="usuario")
 
 class Perfil(Base):
     __tablename__ = "perfis"
     
     id_perfil = Column(Integer, primary_key=True, autoincrement=True)
-    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'), unique=True, nullable=False)
-    telefone = Column(String(20), nullable=True)
-    data_nascimento = Column(DateTime, nullable=True)
-    genero = Column(String(20), nullable=True)
-    escolaridade = Column(String(50), nullable=True)
-    cidade = Column(String(100), nullable=True)
-    estado = Column(String(2), nullable=True)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    nivel_acesso = Column(String(50), default='estudante')
     bio = Column(Text, nullable=True)
-    foto_url = Column(String(255), nullable=True)
-    data_criacao = Column(DateTime, default=datetime.datetime.utcnow)
-    data_atualizacao = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+    telefone = Column(String(20), nullable=True)
     
+    # Relacionamentos
     usuario = relationship("Usuario", back_populates="perfil")
+
+class Administrador(Base):
+    __tablename__ = "administradores"
+    
+    id_admin = Column(Integer, primary_key=True, autoincrement=True)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    nivel_permissao = Column(String(50), default='superadmin')
+    ativo = Column(Boolean, default=True)
+    data_ultimo_login = Column(DateTime, nullable=True) 
+
+    usuario = relationship("Usuario", back_populates="administrador")
 
 class TokenRecuperacao(Base):
     __tablename__ = "tokens_recuperacao"
     
     id_token = Column(Integer, primary_key=True, autoincrement=True)
-    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'), nullable=False)
-    token = Column(String(100), unique=True, nullable=False, index=True)
+    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    token = Column(String(100), unique=True, nullable=False)
     data_criacao = Column(DateTime, default=datetime.datetime.utcnow)
     data_expiracao = Column(DateTime, nullable=False)
     utilizado = Column(Boolean, default=False)
-    data_utilizacao = Column(DateTime, nullable=True)
     
+    # Relacionamentos
     usuario = relationship("Usuario", back_populates="tokens_recuperacao")
 
-class HistoricoLogin(Base):
-    __tablename__ = "historico_login"
-    
-    id_historico = Column(Integer, primary_key=True, autoincrement=True)
-    id_usuario = Column(Integer, ForeignKey('usuarios.id_usuario'), nullable=False)
-    data_login = Column(DateTime, default=datetime.datetime.utcnow)
-    ip_address = Column(String(45), nullable=True)  # IPv6 compatible
-    user_agent = Column(Text, nullable=True)
-    dispositivo = Column(String(100), nullable=True)
-    
-    usuario = relationship("Usuario", back_populates="historico_login")
-
+# Modelos para TokenService - APENAS AQUI
 class RefreshToken(Base):
     __tablename__ = "refresh_tokens"
     
-    id_refresh_token = Column(Integer, primary_key=True, autoincrement=True)
-    user_id = Column(Integer, nullable=False)
-    user_role = Column(String(20), nullable=False)
-    token = Column(String(255), unique=True, nullable=False, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    token = Column(String(255), unique=True, nullable=False)
     expires_at = Column(DateTime, nullable=False)
-    created_at = Column(DateTime, default=datetime.datetime.utcnow)
     is_revoked = Column(Boolean, default=False)
-    revoked_at = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
-class TokenBlacklist(Base):
-    __tablename__ = "token_blacklist"
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
     
-    id_blacklist = Column(Integer, primary_key=True, autoincrement=True)
-    token = Column(String(500), unique=True, nullable=False, index=True)
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey('usuarios.id_usuario'))
+    token = Column(String(255), unique=True, nullable=False)
     expires_at = Column(DateTime, nullable=False)
+    is_used = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+class AdminSession(Base):
+    __tablename__ = "admin_sessions"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    session_id = Column(String(32), unique=True, nullable=False)
+    admin_email = Column(String(100), nullable=False)
+    pin_code = Column(String(4), nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    is_used = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
